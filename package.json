@@ -1,0 +1,19 @@
+{
+  "name": "itsb-usb",
+  "version": "0.9.0",
+  "main": "index.js",
+  "dependencies": {
+    "usb-detection": "*",
+    "watchjs": "*",
+    "util": "*"
+  },
+  "engine": {
+    "node": "*",
+    "npm": "*"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Staffan Öhrberg <staffan.orberg@sakerhetsbolaget.se>",
+  "license": ""
+}
