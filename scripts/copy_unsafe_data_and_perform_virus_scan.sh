@@ -2,9 +2,7 @@
 serialNumber="$1"
 
 # Create temporary working directories
-rm -rf /tmp/usb-unsecure
-rm -rf /tmp/usb-secure
-rm -rf /tmp/usb-infected
+rm -rf /tmp/usb-unsecure /tmp/usb-secure /tmp/usb-infected
 mkdir -p /tmp/usb-unsecure/media
 mkdir -p /tmp/usb-unsecure/data
 mkdir -p /tmp/usb-infected
