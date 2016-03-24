@@ -41,7 +41,6 @@ var logger = new (winston.Logger)({
 
 var usb = {
   safe_serialNumber: 'unknown',
-  safe_status: 'unknown',
   unsafe_serialNumber: 'unknown',
   unsafe_status: 'unknown'
 };
@@ -56,14 +55,15 @@ watch(usb, 'unsafe_serialNumber', function() {
         logger.error('exec error: ' + error);
         info.info('Operation failed, please remove USB device');
         spawn('rm', ['-rf', '/tmp/usb-unsecure', '/tmp/usb-secure', '/tmp/usb-infected']);
-        info.info('Waiting for USB devices...')
+        info.info('Waiting for USB devices (maybe you have to remove device and try again)...')
         usb.unsafe_status = 'unknown';
+        usb.safe_serialNumber = 'unknown';
       } else {
         logger.debug(stdout);
         var result = parseInt(stdout.match(/Infected files: (\d*)/g)[0].split(':')[1]);
         if (result === 0) info.info('No virus detected');
-        else info.info('Virus detected!! ' + result + ' infected files will not be transfered');
-        info.info('Data is copied and ready to be transfered to safe USB device')
+        else info.info('Virus detected!! ' + result + ' infected files moved and will not be transfered');
+        info.info('Data is copied and ready to be transfered to safe USB device');
         usb.unsafe_status = 'done';
       }
     });
@@ -72,69 +72,37 @@ watch(usb, 'unsafe_serialNumber', function() {
 
 watch(usb, ['safe_serialNumber', 'unsafe_status'], function() {
   if(usb.safe_serialNumber !== 'unknown' && usb.unsafe_status === 'done') {
-    info.info('Copy scanned data to safe USB device');
     child = exec('bash ./scripts/wait_for_kingston.sh ' + usb.safe_serialNumber, function (error, stdout, stderr) {
       if (error !== null) {
         logger.error('exec error: ' + error);
         info.info('Operation failed, please remove all USB devices');
         spawn('rm', ['-rf', '/tmp/usb-unsecure', '/tmp/usb-secure', '/tmp/usb-infected']);
-        info.info('Waiting for USB devices...')
+        info.info('Waiting for USB devices (maybe you have to remove device and try again)...')
         usb.safe_serialNumber = 'unknown';
         usb.unsafe_status = 'unknown';
       } else {
         spawn('./bin/linux64/dtvp_login',[], { stdio: 'inherit' });
+        info.info('Waiting 20 seconds for login to Kingston...');
         child = exec('bash ./scripts/copy_to_kingston.sh ' + usb.safe_serialNumber, function (error, stdout, stderr) {
           if (error !== null) {
             logger.error('exec error: ' + error);
             info.info('Operation failed, please remove all USB devices');
             spawn('rm', ['-rf', '/tmp/usb-unsecure', '/tmp/usb-secure', '/tmp/usb-infected']);
-            info.info('Waiting for USB devices...')
+            info.info('Waiting for USB devices (maybe you have to remove device and try again)...')
             usb.safe_serialNumber = 'unknown';
             usb.unsafe_status = 'unknown';
           } else {
-            info.info('Data is copied and ready to be used');
+            info.info('Data copied successfully and ready to be used');
+            spawn('rm', ['-rf', '/tmp/usb-unsecure', '/tmp/usb-secure', '/tmp/usb-infected']);
+            info.info('Waiting for USB devices...')
             usb.unsafe_status = 'unknown';
+            usb.safe_serialNumber = 'unknown';
           }
         });
       }
     });
   }
 });
-
-/*
-watch(usb, ['safe_serialNumber', 'unsafe_status'], function() {
-  if(usb.safe_serialNumber !== 'unknown' && usb.unsafe_status === 'done') {
-    info.info('Copy scanned data to safe USB device');
-    child = exec('bash ./scripts/copy_data_to_safe_usb.sh ' + usb.safe_serialNumber, function (error, stdout, stderr) {
-      if (error !== null) {
-        logger.error('exec error: ' + error);
-        info.info('Operation failed, please remove all USB devices');
-        info.info('Cleanup system after failure');
-        child = exec('bash ./scripts/cleanup_unsafe_data.sh', function (error, stdout, stderr) {
-          if (error !== null) {
-            logger.error('exec error: ' + error);
-          }
-          info.info('Waiting for USB devices...')
-          usb.safe_serialNumber = 'unknown';
-          usb.unsafe_status = 'unknown';
-        });
-      } else {
-        info.info('Data is copied and ready to be used')
-        usb.unsafe_status = 'done';
-
-        info.info('Cleanup system after successfully execution');
-        child = exec('bash ./scripts/cleanup_unsafe_data.sh', function (error, stdout, stderr) {
-          if (error !== null) {
-            logger.error('exec error: ' + error);
-          }
-          info.info('Done')
-          usb.unsafe_status = 'done';
-        });
-      }
-    });
-  }
-});
-*/
 
 usbDetect.on('add', function(device) {
   if (device.vendorId === 2385 && device.productId === 5381 && usb.safe_serialNumber === 'unknown') {

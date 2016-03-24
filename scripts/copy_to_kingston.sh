@@ -21,7 +21,7 @@ fi
 
 sudo mount $usb_path /tmp/usb-secure/media
 cp -r /tmp/usb-unsecure/data/*.* /tmp/usb-secure/media
-#sudo umount $usb_path
+sudo umount $usb_path
 
 # Close secure USB device
-#./bin/linux64/dtvp_logout
+./bin/linux64/dtvp_logout
