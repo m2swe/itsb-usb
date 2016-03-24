@@ -3,8 +3,6 @@ var usbDetect = require('usb-detection'),
     WatchJS = require('watchjs'),
     exec = require('child_process').exec, child;
 
-var spawn = require('child_process').spawn;
-
 var watch = WatchJS.watch;
 
 var info = new (winston.Logger)({
@@ -55,11 +53,15 @@ watch(usb, 'unsafe_serialNumber', function() {
       if (error !== null) {
         logger.error('exec error: ' + error);
         info.info('Operation failed, please remove USB device');
-        spawn('rm', ['-rf', '/tmp/usb-unsecure', '/tmp/usb-secure', '/tmp/usb-infected']);
-        info.info('Waiting for USB devices...')
-        usb.unsafe_status = 'unknown';
+        info.info('Cleanup system after failure');
+        child = exec('bash ./scripts/cleanup_unsafe_data.sh', function (error, stdout, stderr) {
+          if (error !== null) {
+            logger.error('exec error: ' + error);
+          }
+          info.info('Waiting for USB devices...')
+          usb.unsafe_status = 'unknown';
+        });
       } else {
-        logger.debug(stdout);
         var result = parseInt(stdout.match(/Infected files: (\d*)/g)[0].split(':')[1]);
         if (result === 0) info.info('No virus detected');
         else info.info('Virus detected!! ' + result + ' infected files will not be transfered');
@@ -70,38 +72,6 @@ watch(usb, 'unsafe_serialNumber', function() {
   }
 });
 
-watch(usb, ['safe_serialNumber', 'unsafe_status'], function() {
-  if(usb.safe_serialNumber !== 'unknown' && usb.unsafe_status === 'done') {
-    info.info('Copy scanned data to safe USB device');
-    child = exec('bash ./scripts/wait_for_kingston.sh ' + usb.safe_serialNumber, function (error, stdout, stderr) {
-      if (error !== null) {
-        logger.error('exec error: ' + error);
-        info.info('Operation failed, please remove all USB devices');
-        spawn('rm', ['-rf', '/tmp/usb-unsecure', '/tmp/usb-secure', '/tmp/usb-infected']);
-        info.info('Waiting for USB devices...')
-        usb.safe_serialNumber = 'unknown';
-        usb.unsafe_status = 'unknown';
-      } else {
-        spawn('./bin/linux64/dtvp_login',[], { stdio: 'inherit' });
-        child = exec('bash ./scripts/copy_to_kingston.sh ' + usb.safe_serialNumber, function (error, stdout, stderr) {
-          if (error !== null) {
-            logger.error('exec error: ' + error);
-            info.info('Operation failed, please remove all USB devices');
-            spawn('rm', ['-rf', '/tmp/usb-unsecure', '/tmp/usb-secure', '/tmp/usb-infected']);
-            info.info('Waiting for USB devices...')
-            usb.safe_serialNumber = 'unknown';
-            usb.unsafe_status = 'unknown';
-          } else {
-            info.info('Data is copied and ready to be used');
-            usb.unsafe_status = 'unknown';
-          }
-        });
-      }
-    });
-  }
-});
-
-/*
 watch(usb, ['safe_serialNumber', 'unsafe_status'], function() {
   if(usb.safe_serialNumber !== 'unknown' && usb.unsafe_status === 'done') {
     info.info('Copy scanned data to safe USB device');
@@ -134,7 +104,6 @@ watch(usb, ['safe_serialNumber', 'unsafe_status'], function() {
     });
   }
 });
-*/
 
 usbDetect.on('add', function(device) {
   if (device.vendorId === 2385 && device.productId === 5381 && usb.safe_serialNumber === 'unknown') {
