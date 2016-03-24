@@ -5,7 +5,7 @@
   "dependencies": {
     "usb-detection": "*",
     "watchjs": "*",
-    "util": "*"
+    "winston": "*"
   },
   "engine": {
     "node": "*",

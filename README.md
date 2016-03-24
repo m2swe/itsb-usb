@@ -2,7 +2,13 @@
 
 ## Purpose
 
-## Dependencies
+## Install
+
+Set root permission on itsb-usb user
+```javascript
+sudo visudo
+<user> ALL=(ALL) NOPASSWD: ALL
+```
 
 Installation of node js on CentOS 7
 ```javascript
@@ -14,28 +20,25 @@ Installation of libudev on CentOS 7
 sudo yum install libudev-devel
 ```
 
-Installation of node modules
+Installation of dependencies node modules
 ```javascript
+From root directory of itsb-usb:
 npm install
+```
+
+Installation and configuration of ClamAV on CentOS 7
+```javascript
+sudo yum install -y epel-release
+sudo yum install -y clamav clamav-update
+
+cp /etc/freshclam.conf /etc/freshclam.conf.bak
+sed -i ‘/^Example/d’ /etc/freshclam.conf
+sudo freshclam
 ```
 
 ## Run
 ```javascript
 node index.js
-```
-
-## Parameter 'device'
-
-```javascript
-{
-  locationId: <id>,
-  vendorId: <vendorId>,
-  productId: <productId>,
-  deviceName: <deviceName>,
-  manufacturer: <manufacturer>,
-  serialNumber: <serialNumber>,
-  deviceAddress: <deviceAddress>
-}
 ```
 
 ## Changelog
