@@ -9,10 +9,17 @@ Set root permission on itsb-usb user
 sudo visudo
 <user> ALL=(ALL) NOPASSWD: ALL
 ```
+Installation of dependancies
+```javascript
+yum update -y
+yum install -y git
+yum group install "Development Tools"
+```
 
 Installation of node js on CentOS 7
 ```javascript
 sudo curl --silent --location https://rpm.nodesource.com/setup_5.x | bash -
+yum install -y nodejs
 ```
 
 Installation of libudev on CentOS 7
@@ -32,7 +39,7 @@ sudo yum install -y epel-release
 sudo yum install -y clamav clamav-update
 
 cp /etc/freshclam.conf /etc/freshclam.conf.bak
-sed -i ‘/^Example/d’ /etc/freshclam.conf
+sed -i '/^Example/d' /etc/freshclam.conf
 sudo freshclam
 ```
 
