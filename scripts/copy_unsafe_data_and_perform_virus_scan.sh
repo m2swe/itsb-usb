@@ -10,7 +10,7 @@ mkdir -p /tmp/usb-infected
 # Wait for USB device to be ready
 usb_path=""
 counter=0
-while [[ -z "$usb_path" || "$usb_path" == *"by-id"* && "$counter" -lt 20 ]]
+while [[ (-z "$usb_path" || "$usb_path" == *"by-id"*) && "$counter" -lt 20 ]]
 do
   usb_path=$(echo | readlink -f /dev/disk/by-id/*$serialNumber*part*)
   let counter=counter+1
