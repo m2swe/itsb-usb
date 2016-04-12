@@ -1,5 +1,6 @@
 #!/bin/bash
 serialNumber="$1"
+options="$2"
 
 # Create temporary working directories
 rm -rf /tmp/usb-unsecure /tmp/usb-secure /tmp/usb-infected
@@ -29,5 +30,5 @@ cp -r /tmp/usb-unsecure/media/*.* /tmp/usb-unsecure/data
 sudo umount $usb_path
 
 # Start virus scan (verbose)
-#./bin/bdscan /tmp/usb-unsecure/data #>/dev/null 2>&1
-clamscan -r -i --move=/tmp/usb-infected /tmp/usb-unsecure/data #>/dev/null 2>&1
+clamscan $options /tmp/usb-unsecure/data
+#clamscan -r -i --move=/tmp/usb-infected /tmp/usb-unsecure/data
